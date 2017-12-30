@@ -6,6 +6,7 @@
   "author": "Miko Kiiski <miko.kiiski@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "ramda": "^0.25.0",
     "request-in-session": "git+ssh://git@github.com:elysion/request-in-session.git"
   },
   "devDependencies": {
