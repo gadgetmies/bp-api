@@ -62,7 +62,16 @@ const api = {
             .then(downloadUrl => session.getBlob(downloadUrl, callback))
             .catch(err => callback(err))
       }
-      return callback(null, api)
+
+      const ensureLoginSuccessful = () => api.getMyBeatport(err => {
+        if (err) {
+          callback(err)
+        } else {
+          callback(null, api)
+        }
+      })
+
+      return ensureLoginSuccessful()
     })
   },
   initAsync: (username, password) =>
