@@ -43,10 +43,11 @@ const api = {
           handleErrorOrCallFn(callback, res => callback(null, res.results.preview))),
         addTrackToCart: (trackId, cartId, callback) => session.postJson(`${beatportUri}/api/${cartId}`, {
           'items': [{ 'type': 'track', 'id': trackId }]
-          // , "trackingData": { "type": "product", "id": "9915168", "name": "Contradictions", "position": "1", "brand": "Shogun Audio", "category": "Tracks", "variant": "track", "list": "Track Detail", "price": "1.56", "dimension1": "Alix Perez", "dimension2": null, "dimension3": "Drum & Bass", "dimension4": null, "dimension12": null }
-        },
-          handleErrorOrCallFn(callback, res => callback(null, res))),
-        getAvailableDownloadIds: callback => session.get('https://www.beatport.com/downloads/available',
+        }, handleErrorOrCallFn(callback, res => callback(null, res))),
+        removeTrackFromCart: (trackId, cartId, callback) => session.deleteJson(`${beatportUri}/api/cart/${cartId}`, {
+          'items': [{ 'type': 'track', 'id': trackId }]
+        }, handleErrorOrCallFn(callback, res => callback(null, res))),
+        getAvailableDownloadIds: callback => session.get(`${beatportUri}/downloads/available`,
           handleErrorOrCallFn(callback, res => {
             return BPromise.resolve(res)
               .then(getPlayables)
