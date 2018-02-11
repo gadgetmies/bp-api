@@ -23,25 +23,25 @@ const api = {
       }
 
       const getJsonAsync = BPromise.promisify(session.getJson)
-
+      const beatportUri = `https://www.beatport.com`
       const api = {
-        getMyBeatport: callback => session.getJson('https://www.beatport.com/api/my-beatport', callback),
+        getMyBeatport: callback => session.getJson(`${beatportUri}/api/my-beatport`, callback),
         getMyBeatportTracks: (page, callback) =>
-          session.get(`https://www.beatport.com/my-beatport?page=${page}&_pjax=%23pjax-inner-wrapper`,
+          session.get(`${beatportUri}/my-beatport?page=${page}&_pjax=%23pjax-inner-wrapper`,
             handleErrorOrCallFn(callback, res => callback(null, getPlayables(res)))),
-        getItemsInCarts: (callback) => session.getJson('https://www.beatport.com/api/cart/cart',
+        getItemsInCarts: (callback) => session.getJson(`${beatportUri}/api/cart/cart`,
           handleErrorOrCallFn(callback, res => {
             BPromise.map(res.carts.map(R.prop('id')),
-              cartId => getJsonAsync(`https://www.beatport.com/api/cart/${cartId}`))
+              cartId => getJsonAsync(`${beatportUri}/api/cart/${cartId}`))
               .map(({ items }) => R.pluck('id', items))
               .then(R.flatten)
               .tap(idsOfItemsInCart => callback(null, idsOfItemsInCart))
               .catch(err => callback(err))
-        })),
+          })),
         getTrack: (trackId, callback) => session.getJson(`https://embed.beatport.com/track?id=${trackId}`, callback),
         getClip: (trackId, callback) => api.getTrack(trackId,
           handleErrorOrCallFn(callback, res => callback(null, res.results.preview))),
-        addTrackToCart: (trackId, cartId, callback) => session.postJson(`https://www.beatport.com/api/${cartId}`, {
+        addTrackToCart: (trackId, cartId, callback) => session.postJson(`${beatportUri}/api/${cartId}`, {
           'items': [{ 'type': 'track', 'id': trackId }]
           // , "trackingData": { "type": "product", "id": "9915168", "name": "Contradictions", "position": "1", "brand": "Shogun Audio", "category": "Tracks", "variant": "track", "list": "Track Detail", "price": "1.56", "dimension1": "Alix Perez", "dimension2": null, "dimension3": "Drum & Bass", "dimension4": null, "dimension12": null }
         },
@@ -57,7 +57,7 @@ const api = {
           })
         ),
         downloadTrackWithId: (downloadId, callback) =>
-          getJsonAsync(`https://www.beatport.com/api/downloads/purchase?downloadId=${downloadId}`)
+          getJsonAsync(`${beatportUri}/api/downloads/purchase?downloadId=${downloadId}`)
             .then(R.prop('download_url'))
             .then(downloadUrl => session.getBlob(downloadUrl, callback))
             .catch(err => callback(err))
