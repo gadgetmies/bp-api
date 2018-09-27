@@ -47,7 +47,7 @@ const api = {
         removeTrackFromCart: (trackId, cartId, callback) => session.deleteJson(`${beatportUri}/api/cart/${cartId}`, {
           'items': [{ 'type': 'track', 'id': trackId }]
         }, handleErrorOrCallFn(callback, res => callback(null, res))),
-        getAvailableDownloadIds: callback => session.get(`${beatportUri}/downloads/available`,
+        getAvailableDownloadIds: callback => session.get(`${beatportUri}/downloads/available?per-page=1000`,
           handleErrorOrCallFn(callback, res => {
             return BPromise.resolve(res)
               .then(getPlayables)
