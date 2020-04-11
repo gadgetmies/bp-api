@@ -53,6 +53,17 @@ const getApi = session => {
           .catch(err => callback(err))
       })
     ),
+    getDownloadedIds: (page = 1, callback) => session.get(
+      `${beatportUri}/downloads/downloaded?page=${page}&per-page=1000`,
+    handleErrorOrCallFn(callback, res => {
+      return BPromise.resolve(res)
+        .then(getPlayables)
+        .then(R.prop('tracks'))
+        .then(R.pluck('id'))
+        .tap(trackIds => callback(null, trackIds))
+        .catch(err => callback(err))
+      })
+    ),
     downloadTrackWithId: (downloadId, callback) =>
       getJsonAsync(`${beatportUri}/api/downloads/purchase?downloadId=${downloadId}`)
         .then(R.prop('download_url'))
