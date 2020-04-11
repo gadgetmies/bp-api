@@ -43,16 +43,12 @@ const getApi = session => {
     removeTrackFromCart: (trackId, cartId, callback) => session.deleteJson(`${beatportUri}/api/cart/${cartId}`, {
       'items': [{ 'type': 'track', 'id': trackId }]
     }, handleErrorOrCallFn(callback, res => callback(null, res))),
-    getAvailableDownloadIds: (page = 1, callback) => session.get(`${beatportUri}/downloads/available?page=${page}&per-page=1000`,
-      handleErrorOrCallFn(callback, res => {
-        return BPromise.resolve(res)
-          .then(getPlayables)
-          .then(R.prop('tracks'))
-          .then(R.pluck('downloadId'))
-          .tap(downloadIds => callback(null, downloadIds))
-          .catch(err => callback(err))
-      })
-    ),
+    getAvailableDownloadIds: (page = 1, callback) => 
+      session.get(`${beatportUri}/downloads/available?page=${page}&per-page=1000`,
+      handleErrorOrCallFn(callback, res => callback(null, getPlayables(res)))),
+    getDownloadedTracks: (page = 1, callback) => session.get(
+      `${beatportUri}/downloads/downloaded?page=${page}&per-page=1000`,
+      handleErrorOrCallFn(callback, res => callback(null, getPlayables(res)))),
     downloadTrackWithId: (downloadId, callback) =>
       getJsonAsync(`${beatportUri}/api/downloads/purchase?downloadId=${downloadId}`)
         .then(R.prop('download_url'))
