@@ -43,7 +43,7 @@ const getApi = session => {
     removeTrackFromCart: (trackId, cartId, callback) => session.deleteJson(`${beatportUri}/api/cart/${cartId}`, {
       'items': [{ 'type': 'track', 'id': trackId }]
     }, handleErrorOrCallFn(callback, res => callback(null, res))),
-    getAvailableDownloadIds: (page = 1, callback) => 
+    getAvailableDownloadIds: (page = 1, callback) =>
       session.get(`${beatportUri}/downloads/available?page=${page}&per-page=1000`,
       handleErrorOrCallFn(callback, res => callback(null, getPlayables(res)))),
     getDownloadedTracks: (page = 1, callback) => session.get(
@@ -80,7 +80,11 @@ const initializers = {
     return init(cookieUri, loginUri, username, password, csrfTokenKey, sessionCookieKey, handleCreateSessionResponse(callback))
   },
   initWithSession: (sessionCookieValue, csrfToken, callback) => {
-    return initWithSession(sessionCookieKey, sessionCookieValue, cookieUri, csrfTokenKey, csrfToken, handleCreateSessionResponse(callback))
+    return initWithSession(
+      { [sessionCookieKey]: sessionCookieValue, [csrfTokenKey]: csrfToken },
+      cookieUri,
+      handleCreateSessionResponse(callback)
+    )
   },
   initAsync: (username, password) =>
     BPromise.promisify(initializers.init)(username, password)

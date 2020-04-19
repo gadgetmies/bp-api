@@ -1,13 +1,13 @@
 {
   "name": "bp-api",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "main": "index.js",
   "repository": "git@github.com:elysion/bp-api.git",
   "author": "Miko Kiiski <miko.kiiski@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "ramda": "^0.25.0",
-    "request-in-session": "git://git@github.com:elysion/request-in-session.git#v1.1.0"
+    "request-in-session": "git://git@github.com:elysion/request-in-session.git#v1.2.1"
   },
   "devDependencies": {
     "eslint": "^4.12.1"
