@@ -11,11 +11,17 @@ const handleErrorOrCallFn = R.curry((errorHandler, fn) => (err, res) => err ? er
 
 const scrapeJSON = R.curry((startString, stopString, string) => {
   const start = string.indexOf(startString) + startString.length
-  const stop = string.indexOf(stopString, start)
-  return JSON.parse(string.substring(start, stop))
+  const stop = string.indexOf(stopString, start) + stopString.length - (stopString.endsWith(';') ? 1 : 0)
+  const text = string.substring(start, stop)
+  try {
+    return JSON.parse(text)
+  } catch (e) {
+    console.error(`Failed to scrape JSON`, text)
+    throw e
+  }
 })
 
-const getPlayables = pageSource => scrapeJSON('window.Playables = ', ';', pageSource)
+const getPlayables = pageSource => scrapeJSON('window.Playables = ', '};', pageSource)
 
 const getApi = session => {
   const getJsonAsync = BPromise.promisify(session.getJson)
