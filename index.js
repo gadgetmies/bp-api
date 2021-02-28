@@ -1,7 +1,9 @@
 const BPromise = require('bluebird')
 const R = require('ramda')
 const { init, initWithSession } = require('request-in-session')
+const request = require('request-promise').defaults({ strictSSL: false, resolveWithFullResponse: true })
 
+const beatportUri = 'https://www.beatport.com'
 const loginUri = 'https://www.beatport.com/account/login'
 const cookieUri = 'https://www.beatport.com/'
 const csrfTokenKey = '_csrf_token'
@@ -23,9 +25,36 @@ const scrapeJSON = R.curry((startString, stopString, string) => {
 
 const getPlayables = pageSource => scrapeJSON('window.Playables = ', '};', pageSource)
 
+const getArtistTracks = (artistId, page = 1, callback) => {
+  const uri = `${beatportUri}/artist/_/${artistId}/tracks?per-page=50&page=${page}`
+  request(
+    uri,
+    handleErrorOrCallFn(callback, res => {
+      try {
+        return callback(null, getPlayables(res.body))
+      } catch (e) {
+        console.error(`Failed fetching playables from ${uri}`)
+      }
+    })
+  )
+}
+
+const getLabelTracks = (labelId, page = 1, callback) => {
+  const uri = `${beatportUri}/label/_/${labelId}/tracks?per-page=50&page=${page}`
+  request(
+    uri,
+    handleErrorOrCallFn(callback, res => {
+      try {
+        return callback(null, getPlayables(res.body))
+      } catch (e) {
+        console.error(`Failed fetching playables from ${uri}`)
+      }
+    })
+  )
+}
+
 const getApi = session => {
   const getJsonAsync = BPromise.promisify(session.getJson)
-  const beatportUri = 'https://www.beatport.com'
   const api = {
     getMyBeatport: callback => session.getJson(`${beatportUri}/api/my-beatport`, callback),
     getMyBeatportTracks: (page, callback) =>
@@ -59,7 +88,9 @@ const getApi = session => {
       getJsonAsync(`${beatportUri}/api/downloads/purchase?downloadId=${downloadId}`)
         .then(R.prop('download_url'))
         .then(downloadUrl => session.getBlob(downloadUrl, callback))
-        .catch(err => callback(err))
+        .catch(err => callback(err)),
+    getArtistTracks,
+    getLabelTracks
   }
 
   return api
@@ -98,6 +129,10 @@ const initializers = {
   initWithSessionAsync: (sessionCookieValue, csrfToken) =>
     BPromise.promisify(initializers.initWithSession)(sessionCookieValue, csrfToken)
       .then(api => BPromise.promisifyAll(api))
+
+const staticFns = {
+  getArtistTracks,
+  getLabelTracks
 }
 
-module.exports = initializers
+module.exports = { ...initializers, staticFns }

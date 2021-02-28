@@ -7,6 +7,7 @@
   "license": "MIT",
   "dependencies": {
     "ramda": "^0.25.0",
+    "request": "^2.88.2",
     "request-in-session": "git://git@github.com:elysion/request-in-session.git#v1.2.1"
   },
   "devDependencies": {
