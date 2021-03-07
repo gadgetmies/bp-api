@@ -8,7 +8,7 @@
   "dependencies": {
     "ramda": "^0.25.0",
     "request": "^2.88.2",
-    "request-in-session": "elysion/request-in-session#v1.2.1"
+    "request-in-session": "elysion/request-in-session#v1.2.2"
   },
   "devDependencies": {
     "eslint": "^4.12.1"
