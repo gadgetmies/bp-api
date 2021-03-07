@@ -24,6 +24,12 @@ const scrapeJSON = R.curry((startString, stopString, string) => {
 })
 
 const getPlayables = pageSource => scrapeJSON('window.Playables = ', '};', pageSource)
+const getPageTitle = pageSource => {
+  const startString = '<title>'
+  const start = pageSource.indexOf(startString) + startString.length
+  const stop = pageSource('</title>')
+  return pageSource.substring(start, stop)
+}
 
 const getArtistTracks = (artistId, page = 1, callback) => {
   const uri = `${beatportUri}/artist/_/${artistId}/tracks?per-page=50&page=${page}`
@@ -46,6 +52,21 @@ const getLabelTracks = (labelId, page = 1, callback) => {
     handleErrorOrCallFn(callback, res => {
       try {
         return callback(null, getPlayables(res.body))
+      } catch (e) {
+        console.error(`Failed fetching playables from ${uri}`)
+      }
+    })
+  )
+}
+
+const getTracksOnPage = (uri, callback) => {
+  request(
+    uri,
+    handleErrorOrCallFn(callback, res => {
+      try {
+        const tracks = getPlayables(res.body)
+        const title = getPageTitle(res.body)
+        return callback(null, { tracks, title })
       } catch (e) {
         console.error(`Failed fetching playables from ${uri}`)
       }
@@ -167,7 +188,8 @@ const initializers = {
 
 const staticFns = {
   getArtistTracks,
-  getLabelTracks
+  getLabelTracks,
+  getTracksOnPage
 }
 
 module.exports = { ...initializers, staticFns }
