@@ -39,7 +39,8 @@ const getArtistTracks = (artistId, page = 1, callback) => {
       try {
         return callback(null, getPlayables(res.body))
       } catch (e) {
-        console.error(`Failed fetching playables from ${uri}`)
+        console.error(`Failed fetching playables from ${uri}`, e)
+        callback(e)
       }
     })
   )
@@ -53,7 +54,8 @@ const getLabelTracks = (labelId, page = 1, callback) => {
       try {
         return callback(null, getPlayables(res.body))
       } catch (e) {
-        console.error(`Failed fetching playables from ${uri}`)
+        console.error(`Failed fetching playables from ${uri}`, e)
+        callback(e)
       }
     })
   )
@@ -68,7 +70,8 @@ const getTracksOnPage = (uri, callback) => {
         const title = getPageTitle(res.body)
         return callback(null, { tracks, title })
       } catch (e) {
-        console.error(`Failed fetching playables from ${uri}`)
+        console.error(`Failed fetching playables from ${uri}`, e)
+        callback(e)
       }
     })
   )
