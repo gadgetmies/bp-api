@@ -27,7 +27,7 @@ const getPlayables = pageSource => scrapeJSON('window.Playables = ', '};', pageS
 const getPageTitle = pageSource => {
   const startString = '<title>'
   const start = pageSource.indexOf(startString) + startString.length
-  const stop = pageSource('</title>')
+  const stop = pageSource.indexOf('</title>')
   return pageSource.substring(start, stop)
 }
 
