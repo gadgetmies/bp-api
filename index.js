@@ -2,6 +2,7 @@ const BPromise = require('bluebird')
 const R = require('ramda')
 const { init, initWithSession } = require('request-in-session')
 const request = require('request-promise').defaults({ strictSSL: false, resolveWithFullResponse: true })
+const { decode } = require('html-entities')
 
 const beatportUri = 'https://www.beatport.com'
 const loginUri = 'https://www.beatport.com/account/login'
@@ -24,12 +25,28 @@ const scrapeJSON = R.curry((startString, stopString, string) => {
 })
 
 const getPlayables = pageSource => scrapeJSON('window.Playables = ', '};', pageSource)
-const getPageTitle = pageSource => {
+const getPageTitleFromSource = pageSource => {
   const startString = '<title>'
   const start = pageSource.indexOf(startString) + startString.length
   const stop = pageSource.indexOf('</title>')
-  return pageSource.substring(start, stop)
+  return decode(pageSource.substring(start, stop))
+    .replace(' :: Beatport', '')
+    .replace(' artists & music download - Beatport', '')
+    .replace(' music download - Beatport', '')
 }
+
+const getPageTitleForUri = (uri, callback) =>
+  request(
+    uri,
+    handleErrorOrCallFn(callback, res => {
+      try {
+        callback(null, getPageTitleFromSource(res.body))
+      } catch (e) {
+        console.error('Failed to fetch the playlist title', e)
+        callback(e)
+      }
+    })
+  )
 
 const getArtistTracks = (artistId, page = 1, callback) => {
   const uri = `${beatportUri}/artist/_/${artistId}/tracks?per-page=50&page=${page}`
@@ -67,7 +84,7 @@ const getTracksOnPage = (uri, callback) => {
     handleErrorOrCallFn(callback, res => {
       try {
         const tracks = getPlayables(res.body)
-        const title = getPageTitle(res.body)
+        const title = getPageTitleFromSource(res.body)
         return callback(null, { tracks, title })
       } catch (e) {
         console.error(`Failed fetching playables from ${uri}`, e)
@@ -192,7 +209,8 @@ const initializers = {
 const staticFns = {
   getArtistTracks,
   getLabelTracks,
-  getTracksOnPage
+  getTracksOnPage,
+  getTitle: getPageTitleForUri
 }
 
 module.exports = { ...initializers, staticFns }
