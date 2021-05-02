@@ -6,10 +6,12 @@
   "author": "Miko Kiiski <miko.kiiski@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "bluebird": "^3.7.2",
     "html-entities": "^2.3.2",
     "ramda": "^0.25.0",
     "request": "^2.88.2",
-    "request-in-session": "elysion/request-in-session#v1.2.3"
+    "request-in-session": "elysion/request-in-session#v1.2.3",
+    "request-promise": "^4.2.6"
   },
   "devDependencies": {
     "eslint": "^7.23.0"
