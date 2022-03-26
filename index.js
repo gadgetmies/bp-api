@@ -3,6 +3,8 @@ const R = require('ramda')
 const { init, initWithSession } = require('request-in-session')
 const request = require('request-promise').defaults({ strictSSL: false, resolveWithFullResponse: true })
 const { decode } = require('html-entities')
+const jsdom = require('jsdom')
+const { JSDOM } = jsdom
 
 const beatportUri = 'https://www.beatport.com'
 const loginUri = 'https://www.beatport.com/account/login'
@@ -77,6 +79,45 @@ const getLabelTracks = (labelId, page = 1, callback) => {
     })
   )
 }
+
+const getSearchResults = html =>  {
+  const dom = new JSDOM(html)
+  const elements = Array.from(dom.window.document.querySelectorAll('.bucket-item'))
+
+  const results = elements.map(element => {
+    const url = element.querySelector('a').getAttribute('href')
+    const type = url.substring(1, url.indexOf('/', 1))
+    const name = element.querySelector(`.${type}-name`).textContent
+    const id = url.substring(url.lastIndexOf('/') + 1)
+
+    return {
+      type,
+      name,
+      url: `${beatportUri}${url}`,
+      id
+    }
+  })
+
+  return results
+}
+
+const search = (query, type, callback) => {
+  const uri = `${beatportUri}/search/${type}?q=${query}&_pjax=%23pjax-inner-wrapper`
+  request(
+    uri,
+    handleErrorOrCallFn(callback, res => {
+      try {
+        return callback(null, getSearchResults(res.body))
+      } catch (e) {
+        console.error(`Failed fetching search results from ${uri}`, e)
+        callback(e)
+      }
+    })
+  )
+}
+
+const searchForArtists = (query, callback) => search(query, 'artists', callback)
+const searchForLabels = (query, callback) => search(query, 'labels', callback)
 
 const getTracksOnPage = (uri, callback) => {
   request(
@@ -156,7 +197,9 @@ const getApi = session => {
         .then(downloadUrl => session.getBlob(downloadUrl, callback))
         .catch(err => callback(err)),
     getArtistTracks,
-    getLabelTracks
+    getLabelTracks,
+    searchForArtists,
+    searchForLabels
   }
 
   return api
@@ -210,7 +253,9 @@ const staticFns = {
   getArtistTracks,
   getLabelTracks,
   getTracksOnPage,
-  getTitle: getPageTitleForUri
+  getTitle: getPageTitleForUri,
+  searchForArtists,
+  searchForLabels
 }
 
 module.exports = { ...initializers, staticFns }
