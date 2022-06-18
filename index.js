@@ -89,11 +89,13 @@ const getSearchResults = html =>  {
     const type = url.substring(1, url.indexOf('/', 1))
     const name = element.querySelector(`.${type}-name`).textContent
     const id = url.substring(url.lastIndexOf('/') + 1)
+    const img = element.querySelector(`img`).src
 
     return {
       type,
       name,
       url: `${beatportUri}${url}`,
+      img,
       id
     }
   })
