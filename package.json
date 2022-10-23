@@ -1,6 +1,6 @@
 {
   "name": "bp-api",
-  "version": "3.1.8",
+  "version": "3.1.9",
   "main": "index.js",
   "repository": "git@github.com:gadgetmies/bp-api.git",
   "author": "Miko Kiiski <miko.kiiski@gmail.com>",
