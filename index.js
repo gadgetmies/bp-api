@@ -42,7 +42,13 @@ const getPageTitleForUri = (uri, callback) =>
     uri,
     handleErrorOrCallFn(callback, res => {
       try {
-        callback(null, getPageTitleFromSource(res.body))
+        if (Math.floor(res.statusCode / 100) < 4) {
+          return callback(null, getPageTitleFromSource(res.body))
+        } else {
+          const message = `Request returned error status. URL: ${uri}`
+          console.error(message)
+          callback(new Error(message))
+        }
       } catch (e) {
         console.error('Failed to fetch the playlist title', e)
         callback(e)
@@ -56,7 +62,13 @@ const getArtistTracks = (artistId, page = 1, callback) => {
     uri,
     handleErrorOrCallFn(callback, res => {
       try {
-        return callback(null, getPlayables(res.body))
+        if (Math.floor(res.statusCode / 100) < 4) {
+          return callback(null, getPlayables(res.body))
+        } else {
+          const message = `Request returned error status. URL: ${uri}`
+          console.error(message)
+          callback(new Error(message))
+        }
       } catch (e) {
         console.error(`Failed fetching playables from ${uri}`, e)
         callback(e)
@@ -71,7 +83,13 @@ const getLabelTracks = (labelId, page = 1, callback) => {
     uri,
     handleErrorOrCallFn(callback, res => {
       try {
-        return callback(null, getPlayables(res.body))
+        if (Math.floor(res.statusCode / 100) < 4) {
+          return callback(null, getPlayables(res.body))
+        } else {
+          const message = `Request returned error status. URL: ${uri}`
+          console.error(message)
+          callback(new Error(message))
+        }
       } catch (e) {
         console.error(`Failed fetching playables from ${uri}`, e)
         callback(e)
@@ -109,7 +127,13 @@ const search = (query, type, callback) => {
     uri,
     handleErrorOrCallFn(callback, res => {
       try {
-        return callback(null, getSearchResults(res.body))
+        if (Math.floor(res.statusCode / 100) < 4) {
+          return callback(null, getSearchResults(res.body))
+        } else {
+          const message = `Request returned error status. URL: ${uri}`
+          console.error(message)
+          callback(new Error(message))
+        }
       } catch (e) {
         console.error(`Failed fetching search results from ${uri}`, e)
         callback(e)
