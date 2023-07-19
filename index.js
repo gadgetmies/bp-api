@@ -16,7 +16,7 @@ const handleErrorOrCallFn = R.curry((errorHandler, fn) => (err, res) => (err ? e
 
 const scrapeJSON = R.curry((startString, stopString, string) => {
   const start = string.indexOf(startString) + startString.length
-  const stop = string.indexOf(stopString, start) + stopString.length - (stopString.endsWith(';') ? 1 : 0)
+  const stop = string.indexOf(stopString, start)
   const text = string.substring(start, stop)
   try {
     return JSON.parse(text)
@@ -26,7 +26,7 @@ const scrapeJSON = R.curry((startString, stopString, string) => {
   }
 })
 
-const getPlayables = pageSource => scrapeJSON('window.Playables = ', '};', pageSource)
+const getQueryData = pageSource => scrapeJSON('<script id="__NEXT_DATA__" type="application/json">', '</script>', pageSource)
 const getPageTitleFromSource = pageSource => {
   const startString = '<title>'
   const start = pageSource.indexOf(startString) + startString.length
@@ -63,7 +63,7 @@ const getArtistTracks = (artistId, page = 1, callback) => {
     handleErrorOrCallFn(callback, res => {
       try {
         if (Math.floor(res.statusCode / 100) < 4) {
-          return callback(null, getPlayables(res.body))
+          return callback(null, getQueryData(res.body))
         } else {
           const message = `Request returned error status. URL: ${uri}`
           console.error(message)
@@ -84,7 +84,7 @@ const getLabelTracks = (labelId, page = 1, callback) => {
     handleErrorOrCallFn(callback, res => {
       try {
         if (Math.floor(res.statusCode / 100) < 4) {
-          return callback(null, getPlayables(res.body))
+          return callback(null, getQueryData(res.body))
         } else {
           const message = `Request returned error status. URL: ${uri}`
           console.error(message)
@@ -150,7 +150,7 @@ const getTracksOnPage = (uri, callback) => {
     uri,
     handleErrorOrCallFn(callback, res => {
       try {
-        const tracks = getPlayables(res.body)
+        const tracks = getQueryData(res.body)
         const title = getPageTitleFromSource(res.body)
         return callback(null, { tracks, title })
       } catch (e) {
@@ -171,7 +171,7 @@ const getApi = session => {
         handleErrorOrCallFn(callback, res => {
           console.log(`${beatportUri}/my-beatport?page=${page}&_pjax=%23pjax-inner-wrapper`)
           console.log(res)
-          return callback(null, getPlayables(res))
+          return callback(null, getQueryData(res))
         })
       ),
     getItemsInCarts: callback =>
@@ -210,12 +210,12 @@ const getApi = session => {
     getAvailableDownloadIds: (page = 1, callback) =>
       session.get(
         `${beatportUri}/downloads/available?page=${page}&per-page=1000`,
-        handleErrorOrCallFn(callback, res => callback(null, getPlayables(res)))
+        handleErrorOrCallFn(callback, res => callback(null, getQueryData(res)))
       ),
     getDownloadedTracks: (page = 1, callback) =>
       session.get(
         `${beatportUri}/downloads/downloaded?page=${page}&per-page=1000`,
-        handleErrorOrCallFn(callback, res => callback(null, getPlayables(res)))
+        handleErrorOrCallFn(callback, res => callback(null, getQueryData(res)))
       ),
     downloadTrackWithId: (downloadId, callback) =>
       getJsonAsync(`${beatportUri}/api/downloads/purchase?downloadId=${downloadId}`)
