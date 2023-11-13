@@ -98,11 +98,11 @@ const getLabelTracks = (labelId, page = 1, callback) => {
   )
 }
 
-const getSearchResults = html =>  {
+const getSearchResults = (html, type) =>  {
   const dom = new JSDOM(html)
-  const elements = Array.from(dom.window.document.querySelectorAll('.bucket-item'))
+  const elements = Array.from(dom.window.document.querySelectorAll(`[data-testid=${type}-card]`))
 
-  const results = elements.map(element => {
+  return elements.map(element => {
     const url = element.querySelector('a').getAttribute('href')
     const type = url.substring(1, url.indexOf('/', 1))
     const name = element.querySelector(`.${type}-name`).textContent
@@ -117,18 +117,16 @@ const getSearchResults = html =>  {
       id
     }
   })
-
-  return results
 }
 
 const search = (query, type, callback) => {
-  const uri = `${beatportUri}/search/${type}?q=${query}&_pjax=%23pjax-inner-wrapper`
+  const uri = `${beatportUri}/search/${type}s?q=${query}&_pjax=%23pjax-inner-wrapper`
   request(
     uri,
     handleErrorOrCallFn(callback, res => {
       try {
         if (Math.floor(res.statusCode / 100) < 4) {
-          return callback(null, getSearchResults(res.body))
+          return callback(null, getSearchResults(res.body, type))
         } else {
           const message = `Request returned error status. URL: ${uri}`
           console.error(message)
@@ -142,8 +140,8 @@ const search = (query, type, callback) => {
   )
 }
 
-const searchForArtists = (query, callback) => search(query, 'artists', callback)
-const searchForLabels = (query, callback) => search(query, 'labels', callback)
+const searchForArtists = (query, callback) => search(query, 'artist', callback)
+const searchForLabels = (query, callback) => search(query, 'label', callback)
 
 const getTracksOnPage = (uri, callback) => {
   request(
